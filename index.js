@@ -41,7 +41,7 @@ app.post('/submit', upload.single('filename'), (req, res) => {
       console.log(exifData.gps);
       if (exifData.gps.GPSLatitude && exifData.gps.GPSLongitude) {
         exifData.gps.GPSLatitude = convert2Decimal(exifData.gps.GPSLatitude);
-        exifData.gps.GPSLongitude = convert2Decimal(exifData.gps.GPSLongitude);
+        exifData.gps.GPSLongitude = convert2Decimal(exifData.gps.GPSLongitude); 
       }
       removeImage(image);
       // console.log(exifData8);
