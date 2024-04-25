@@ -38,6 +38,11 @@ app.post('/submit', upload.single('filename'), (req, res) => {
           error: error.message,
         });
       }
+      console.log(exifData.gps);
+      if (exifData.gps.GPSLatitude && exifData.gps.GPSLongitude) {
+        exifData.gps.GPSLatitude = convert2Decimal(exifData.gps.GPSLatitude);
+        exifData.gps.GPSLongitude = convert2Decimal(exifData.gps.GPSLongitude);
+      }
       removeImage(image);
       // console.log(exifData8);
       res.render('index.ejs', {
@@ -51,6 +56,10 @@ app.post('/submit', upload.single('filename'), (req, res) => {
   }
 });
 app.listen(port, () => console.log(`Server is listening on port ${port}`));
+
+function convert2Decimal(dms) {
+  return (dms[0] + (dms[1]/60) +(dms[2]/3600))
+}
 
 function removeImage(imagePath) {
   fs.unlink(imagePath, err => {
