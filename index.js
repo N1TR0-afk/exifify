@@ -3,7 +3,6 @@ const bodyparser = require('body-parser');
 const path = require('path');
 const ExifImage = require('exif').ExifImage;
 const multer = require('multer');
-const fs = require('fs');
 
 app = express();
 app.set('view engine', 'ejs');
@@ -12,14 +11,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(bodyparser.json());
 port = 3000;
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, __dirname + '/Images');
-  },
-  filename: function (req, file, cb) {
-    cb(null, file.fieldname + Date.now() + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 
@@ -29,22 +21,18 @@ app.get('/', (req, res) => {
 
 app.post('/submit', upload.single('filename'), (req, res) => {
   if (req.file) {
-    const image = req.file.path;
+    const image = req.file.buffer;
     new ExifImage({ image: image }, function (error, exifData) {
       if (error) {
         console.log('Error:' + error.message);
-        removeImage(image);
         return res.render('index.ejs',{
           error: error.message,
         });
       }
-      console.log(exifData.gps);
       if (exifData.gps.GPSLatitude && exifData.gps.GPSLongitude) {
         exifData.gps.GPSLatitude = convert2Decimal(exifData.gps.GPSLatitude);
         exifData.gps.GPSLongitude = convert2Decimal(exifData.gps.GPSLongitude); 
       }
-      removeImage(image);
-      // console.log(exifData8);
       res.render('index.ejs', {
         exifData: exifData,
       });
@@ -61,11 +49,3 @@ function convert2Decimal(dms) {
   return (dms[0] + (dms[1]/60) +(dms[2]/3600))
 }
 
-function removeImage(imagePath) {
-  fs.unlink(imagePath, err => {
-    if (err) {
-      console.log('Error deleting the file : ' + err);
-      return;
-    }
-  });
-}
